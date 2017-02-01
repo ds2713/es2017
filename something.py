@@ -25,16 +25,16 @@ while True:
 
 	if math.fabs(reading) > threshold:
 
-		for x in range (0, history):
-			value[x] = historic_reading[(hist_pointer+1)%history]
-			hist_pointer = (hist_pointer+1)%history
-
 		value[history+1] = reading;
 
-		for future_pointer in range (history+1,future):
-			value[future_pointer] = ads.read(0)
+		for future_pointer in range (0,future):
+			value[future_pointer+history+1] = ads.read(0)
 
-		print(value)
+		for backfill in range (0, history):
+			value[backfill] = historic_reading[(hist_pointer+1)%history]
+			hist_pointer = (hist_pointer+1)%history
+
+		print('New measurement: ', value)
 
 	else:
 
