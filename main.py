@@ -1,7 +1,7 @@
 from machine import Pin, I2C
 import ads1x15
 
-print('Hello world!')
+# print('Hello world!')
 
 #Set up software I2C bus with device.
 i2c = I2C(scl=Pin(5), sda=Pin(4), freq = 100000)
@@ -22,6 +22,13 @@ ads = ads1x15.ADS1115(i2c, address=72)
 # print('Low:		', value)
 # print('High:	', reading_high)
 
-while True:
-	value = ads.read(0)
-	print(value)
+# while True:
+
+value = list()
+
+for x in range (0,100):
+
+	value.append(ads.read(0))
+
+
+print(value)

@@ -1,2 +1,3 @@
+def script():
+	print ('Hello Aksat')
 
-print ('Hello Patty')
