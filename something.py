@@ -1,15 +1,16 @@
 from machine import Pin, I2C
 import ads1x15
 import time
+import math
 
 i2c = I2C(scl=Pin(5), sda=Pin(4), freq = 100000)
 i2cAddress = i2c.scan()
 numBytes = 1
 
 samples = 100
-history = 10
+history = 25
 future = samples - history - 1
-threshold = 20
+threshold = 50
 
 ads = ads1x15.ADS1115(i2c, address=72)
 
@@ -22,7 +23,7 @@ while True:
 
 	reading = ads.read(0)
 
-	if reading > threshold:
+	if math.fabs(reading) > threshold:
 
 		for x in range (0, history):
 			value[x] = historic_reading[(hist_pointer+1)%history]
