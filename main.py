@@ -1,5 +1,6 @@
 from machine import Pin, I2C
 import ads1x15
+import time
 
 # print('Hello world!')
 
@@ -9,6 +10,8 @@ i2c = I2C(scl=Pin(5), sda=Pin(4), freq = 100000)
 i2cAddress = i2c.scan()
 # print('Address: ', i2cAddress)
 numBytes = 1
+
+samples = 200
 
 ads = ads1x15.ADS1115(i2c, address=72)
 
@@ -24,11 +27,10 @@ ads = ads1x15.ADS1115(i2c, address=72)
 
 # while True:
 
-value = list()
+value = [0]*samples
 
-for x in range (0,100):
+for x in range (0,samples):
 
-	value.append(ads.read(0))
-
+	value[x] = ads.read(0)
 
 print(value)
