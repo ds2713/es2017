@@ -2,6 +2,24 @@ from machine import Pin, I2C
 import ads1x15
 import time
 import math
+import network
+from umqtt.simple import MQTTClient
+
+sta_if = network.WLAN(network.STA_IF)
+sta_if.active(True)
+sta_if.connect('EEERover', 'exhibition')
+
+#import uftpd
+
+time.sleep(5)
+
+print(sta_if.ifconfig())
+
+CLIENT_ID = 'mdma'# machine.unique_id()
+CLIENT_TOPIC = '/esys/mdma'
+client = MQTTClient(CLIENT_ID, '192.168.0.10')
+client.connect()
+client.publish(CLIENT_TOPIC, bytes('MDMA live', 'utf-8'))
 
 i2c = I2C(scl=Pin(5), sda=Pin(4), freq = 100000)
 i2cAddress = i2c.scan()
