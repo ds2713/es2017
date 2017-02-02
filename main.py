@@ -17,7 +17,7 @@ def main():
 	print(sta_if.ifconfig())
 
 	# FTP Server
-    import uftpd
+	import uftpd
 
 	# Initial MQTTClient
 	CLIENT_ID = 'mdma'
@@ -84,11 +84,11 @@ def main():
 			hist_pointer = (hist_pointer+1)%history
 
 if __name__ == "__main__":
-    # execute only if run as a script
+	# execute only if run as a script
 
 
 
-    main()
+	main()
 
 # except:
 # 	print('Stopped')
