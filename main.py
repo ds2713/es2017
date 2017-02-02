@@ -74,7 +74,7 @@ def main():
 
 			# Acquire maximum reading in output register
 			maximum_value = max(output_reg)
-			output_str = str('Max reading:', maximum_value)
+			output_str = 'Max reading: ' + str(maximum_value)
 			# Send to broker
 			client.publish(CLIENT_TOPIC, bytes(output_str, 'utf-8'))
 
