@@ -3,10 +3,11 @@ import ads1x15
 import time
 import math
 import network
+import machine
+import json
 from umqtt.simple import MQTTClient
 
 def main():
-
 	# Connect to network, then wait
 	sta_if = network.WLAN(network.STA_IF)
 	sta_if.active(True)
@@ -43,6 +44,16 @@ def main():
 	ads = ads1x15.ADS1115(i2c, address=72)
 	print("ADC configured.")
 
+	# Setup LED
+	pin = Pin(2, Pin.OUT)
+	pin.high()
+
+	# Time setup. Future network setup.
+	# Year, Month, Day, Weekday, Hour, Minutes, Seconds, Milliseconds
+	time_tuple = (2017, 1, 1, 0, 12, 00, 10, 0)
+	rtc = machine.RTC()
+	rtc.datetime(time_tuple)
+
 	# Initialise parameters for measurements
 	samples = 100
 	history = 25
@@ -53,6 +64,7 @@ def main():
 	output_reg = [0]*samples
 	historic_reg = [0]*history
 	hist_pointer = 0
+	index = 0
 
 	print("Begin reading values.")
 	# Infinite reading loop
@@ -61,6 +73,12 @@ def main():
 		reading = ads.read(0)
 
 		if math.fabs(reading) > threshold:
+			# Capture time
+			shock_time = time.localtime()
+
+			# Turn on LED
+			pin.low()
+			print("Shock.")
 
 			# Add current reading to output register
 			output_reg[history+1] = reading;
@@ -74,11 +92,21 @@ def main():
 			output_reg[history - hist_pointer: history] = historic_reg[0:hist_pointer]
 
 			# For debugging, print output register to terminal
-			print('New measurement:', output_reg)
+			# print('New measurement:', output_reg)
 
-			# Acquire maximum reading in output register
+			# Acquire reading statistics for output register
 			maximum_value = max(output_reg)
-			output_str = 'Max reading: ' + str(maximum_value)
+			mean_value = float(sum(output_reg))/float(len(output_reg))
+
+			# Construct JSON
+			message = {
+				'index' : index,
+				'time' : shock_time,
+				'max_value' : maximum_value,
+				'mean_value' : mean_value
+			}
+
+			output_str = json.dumps(message)
 			# Send to broker
 			client.publish(CLIENT_TOPIC, bytes(output_str, 'utf-8'))
 
@@ -86,6 +114,9 @@ def main():
 			# Because it contains outdated info.
 			historic_reg = [0]*history
 			hist_pointer = 0
+			# Turn off LED and update index
+			pin.high()
+			index = index + 1
 
 		else:
 			# Implementation of circular buffer for historical readings
