@@ -23,6 +23,12 @@ You will need `ampy` (`sudo pip install ampy`) on your computer to upload files 
 
 8. Historic buffer is cleared, entire process repeats itself.
 
+9. A cache system. MQTT message is sent. If this does not work, the message is stored. Next time a message needs to be sent, the cache will be emptied first (send first item, delete, repeat until empty). Then the current message sent. Two caveats:
+  * Assumes successful connection will happen before memory runs out. Otherwise crashes.
+  * There is no attempt to check the network connection or reestablish it if it decides to fail.
+
+  In other words, the cache system works exclusively for the problem of the broker temporarily going offline.
+
 ### Remaing possibilities
 1. The website inside the `/docs` folder needs to be made. Active display of data?
 
