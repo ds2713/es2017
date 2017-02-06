@@ -75,7 +75,7 @@ li { line-height: 1.4; }
 
 /* Header, <header> header   - container h1       - project name h2       - project description
 */
-header { background: rgba(0, 0, 0, 0.1); width: 100%; border-bottom: 1px dashed #b5e853; padding: 20px 0; margin: 0 0 40px 0; }
+header { background: rgba(0, 0, 0, 0.1); width: 100%; border-bottom: 1px dashed #b5e853; padding: 20px 0; margin: 0 0 0 0; }
 
 header h1 { font-size: 30px; line-height: 1.5; margin: 0 0 0 -40px; font-weight: bold; font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace; color: #b5e853; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 0 5px rgba(181, 232, 83, 0.1), 0 0 10px rgba(181, 232, 83, 0.1); letter-spacing: -1px; -webkit-font-smoothing: antialiased; }
 
@@ -109,7 +109,32 @@ h1, h2, h3, h4, h5, h6 { font-weight: normal; font-family: Monaco, "Bitstream Ve
 
 dt { font-style: italic; font-weight: bold; }
 
-ul li { list-style: none; }
+/*ul li { list-style: none; }*/
+
+ul {
+    list-style-type: li;
+    margin: 0;
+    padding: 0;
+    width: 15%;
+    background-color: rgba(0, 0, 0, 0);
+    height: 100%;  /*Full height */
+    position: fixed; /* Make it stick, even on scroll */
+    overflow: auto; /* Enable scrolling if the sidenav has too much content */
+    border-right: 1px dashed #b5e853;
+}
+
+li a {
+    display: block;
+    color: #b5e853;
+    padding: 8px 16px;
+    text-decoration: none;
+}
+
+/* Change the link color on hover */
+li a:hover {
+    background-color: #555;
+    color: white;
+}
 
 ul li:before { content: ">>"; font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace; font-size: 13px; color: #b5e853; margin-left: -37px; margin-right: 21px; line-height: 16px; }
 
