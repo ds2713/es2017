@@ -7,8 +7,8 @@ import machine
 import json
 from umqtt.simple import MQTTClient
 
-# Repeated use of network connnection
-def connect_network():
+# Main function
+def main():
 	# Connect to network, then wait
 	sta_if = network.WLAN(network.STA_IF)
 	sta_if.active(True)
@@ -22,11 +22,6 @@ def connect_network():
 	# Print successful network IP address.
 	print("Network connected. IP Address: " + sta_if.ifconfig()[0])
 
-# Main function
-def main():
-	# Connect to network, then wait
-	connect_network()
-
 	# FTP Server, left out because ampy!
 	# import uftpd
 
@@ -38,6 +33,8 @@ def main():
 	# Send MQTT Message at boot to confirm success
 	client.publish(CLIENT_TOPIC, bytes('MDMA MQTT Live', 'utf-8'))
 	print("MQTT client successful.")
+	# Disconnect each time to prevent timeout which will cause an exception.
+	client.disconnect()
 
 	# Setup i2c class for interface with ADC
 	i2c = I2C(scl=Pin(5), sda=Pin(4), freq = 100000)
@@ -71,8 +68,7 @@ def main():
 	historic_reg = [0]*history
 	hist_pointer = 0
 	index = 0
-
-	# Message cache (not quite heap) initialise
+	# Message cache for unsent ones
 	message_cache = []
 
 	print("Begin reading values.")
@@ -117,19 +113,22 @@ def main():
 
 			output_str = json.dumps(message)
 
-			# Send to broker, catch sending errors
+			# Send message to broker, catch sending errors
 			try:
 				# If cache is not empty, send oldest to newest messages
 				# Then delete message, repeat until empty
 				while len(message_cache) > 0:
 					client.connect()
 					client.publish(CLIENT_TOPIC, bytes(message_cache[0], 'utf-8'))
+					client.disconnect()
 					del message_cache[0]
 
 				# Send current message
 				client.connect()
-				client.publish(CLIENT_TOPIC, bytes(message_cache[0], 'utf-8'))
+				client.publish(CLIENT_TOPIC, bytes(output_str, 'utf-8'))
+				client.disconnect()
 
+			# If cannot send, save to cache.
 			except:
 				message_cache.append(output_str)
 
