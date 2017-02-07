@@ -7,6 +7,7 @@ import machine
 import json
 from umqtt.simple import MQTTClient
 
+# Main function
 def main():
 	# Connect to network, then wait
 	sta_if = network.WLAN(network.STA_IF)
@@ -21,9 +22,6 @@ def main():
 	# Print successful network IP address.
 	print("Network connected. IP Address: " + sta_if.ifconfig()[0])
 
-	# Confirming network connection successful
-	# print(sta_if.ifconfig())
-
 	# FTP Server, left out because ampy!
 	# import uftpd
 
@@ -35,6 +33,8 @@ def main():
 	# Send MQTT Message at boot to confirm success
 	client.publish(CLIENT_TOPIC, bytes('MDMA MQTT Live', 'utf-8'))
 	print("MQTT client successful.")
+	# Disconnect each time to prevent timeout which will cause an exception.
+	client.disconnect()
 
 	# Setup i2c class for interface with ADC
 	i2c = I2C(scl=Pin(5), sda=Pin(4), freq = 100000)
@@ -44,9 +44,12 @@ def main():
 	ads = ads1x15.ADS1115(i2c, address=72)
 	print("ADC configured.")
 
-	# Setup LED
-	pin = Pin(2, Pin.OUT)
-	pin.high()
+	# Setup LED (active low) and buzzer (active high)
+	# LED for processing time, buzzer for noting shocks.
+	led = Pin(2, Pin.OUT)
+	led.high()
+	buzzer = Pin(0, Pin.OUT)
+	buzzer.low()
 
 	# Time setup. Future network setup.
 	# Year, Month, Day, Weekday, Hour, Minutes, Seconds, Milliseconds
@@ -65,6 +68,8 @@ def main():
 	historic_reg = [0]*history
 	hist_pointer = 0
 	index = 0
+	# Message cache for unsent ones
+	message_cache = []
 
 	print("Begin reading values.")
 	# Infinite reading loop
@@ -76,9 +81,9 @@ def main():
 			# Capture time
 			shock_time = time.localtime()
 
-			# Turn on LED
-			pin.low()
-			print("Shock.")
+			# Turn on cues, visual, audio.
+			buzzer.high()
+			led.low()
 
 			# Add current reading to output register
 			output_reg[history+1] = reading;
@@ -87,12 +92,12 @@ def main():
 			for future_pointer in range (0,future):
 				output_reg[future_pointer+history+1] = ads.read(0)
 
+			# Turn buzzer off
+			buzzer.low()
+
 			# Copy history into output register
 			output_reg[0:history - hist_pointer] = historic_reg[hist_pointer:history]
 			output_reg[history - hist_pointer: history] = historic_reg[0:hist_pointer]
-
-			# For debugging, print output register to terminal
-			# print('New measurement:', output_reg)
 
 			# Acquire reading statistics for output register
 			maximum_value = max(output_reg)
@@ -107,15 +112,32 @@ def main():
 			}
 
 			output_str = json.dumps(message)
-			# Send to broker
-			client.publish(CLIENT_TOPIC, bytes(output_str, 'utf-8'))
+
+			# Send message to broker, catch sending errors
+			try:
+				# If cache is not empty, send oldest to newest messages
+				# Then delete message, repeat until empty
+				while len(message_cache) > 0:
+					client.connect()
+					client.publish(CLIENT_TOPIC, bytes(message_cache[0], 'utf-8'))
+					client.disconnect()
+					del message_cache[0]
+
+				# Send current message
+				client.connect()
+				client.publish(CLIENT_TOPIC, bytes(output_str, 'utf-8'))
+				client.disconnect()
+
+			# If cannot send, save to cache.
+			except:
+				message_cache.append(output_str)
 
 			# Reinitialise historic_reg and pointer
 			# Because it contains outdated info.
 			historic_reg = [0]*history
 			hist_pointer = 0
 			# Turn off LED and update index
-			pin.high()
+			led.high()
 			index = index + 1
 
 		else:
