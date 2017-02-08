@@ -9,6 +9,8 @@ You will need `ampy` (`sudo pip install ampy`) on your computer to upload files 
 ### Functionality and Processing Information
 1. ADC configured to read data from sensor. ES8266 configured to read data from ADC.
 
+2. ESP8266 will query a server for the setup time data. This assumes that a suitable server is running the time_server.py script which is included.
+
 2. Readings stored in historic (circular) buffer.
 
 3. When a shock exceeds a threshold, the output buffer is filled with the subsequent readings, and with the historic readings.
@@ -36,26 +38,20 @@ You will need `ampy` (`sudo pip install ampy`) on your computer to upload files 
 
 3. Server-side calculations? Aka additional data processing that is too intensive for the poor little microcontroller.
 
-4. Time needs to be set via the network.
+4. Network access? The internal network lacks internet access atm. This makes it difficult for time. Also, what about transmission to another server for recording?
 
-5. Network access? The internal network lacks internet access atm. This makes it difficult for time. Also, what about transmission to another server for recording?
+5. Additional features, such as buying buzzer. Battery? Light sensor for intrusion detection. Noise floor threshold?
 
-6. Additional features, such as buying buzzer. Battery? Light sensor for intrusion detection. Noise floor threshold?
+6. Units and real values of the sensor data.
 
-7. Units and real values of the sensor data.
-
-8. Analogue filtering.
-
-9. Some kind of network repeating thing (in progress). Must be durable for long term use.
+7. Analogue filtering.
 
 ### Talk to Dr. Stott about:
 
-1. Time data on the network. Is there a way to internet?
+1. Server functions. Do we implement stuff for his Pi? For our own server? Can we set up a local listener and direct the data to local database for display on the website?
 
-2. Server functions. Do we implement stuff for his Pi? For our own server? Can we set up a local listener and direct the data to local database for display on the website?
+2. Triggering, statistics, processing. What constitutes sufficient of each?
 
-3. Triggering, statistics, processing. What constitutes sufficient of each?
+3. SSL stuff.
 
-4. SSL stuff.
-
-5. What is cloud functionality?
+4. What is cloud functionality?
