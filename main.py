@@ -70,6 +70,7 @@ def main():
 	buzzer.low()
 
 	# Time setup. Future network setup.
+    print("Configuring time from network.")
     response = http_get("http://192.168.1.118/", 8080)
     response_string = str(response).split("START")[-1].split("END")[0]
     time_list = response_string.split(",")
@@ -80,6 +81,7 @@ def main():
 	time_tuple = (t_int[0], t_int[1], t_int[2], t_int[6], t_int[3], t_int[4], t_int[5], 0)
 	rtc = machine.RTC()
 	rtc.datetime(time_tuple)
+    print("Time has been set.")
 
 	# Initialise parameters for measurements
 	samples = 100
