@@ -5,7 +5,25 @@ import math
 import network
 import machine
 import json
+import socket
 from umqtt.simple import MQTTClient
+
+# Function to obtain response via HTML.
+def http_get(url, port):
+    _, _, host, path = url.split('/', 3)
+    addr = socket.getaddrinfo(host, port)[0][-1]
+    s = socket.socket()
+    s.connect(addr)
+    s.send(bytes("GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n" % (path, host), "utf8"))
+    fullresponse = []
+    while True:
+        data = s.recv(100)
+        if data:
+            fullresponse.append(str(data, "utf8"))
+        else:
+            break
+    s.close()
+    return fullresponse
 
 # Main function
 def main():
@@ -52,8 +70,14 @@ def main():
 	buzzer.low()
 
 	# Time setup. Future network setup.
-	# Year, Month, Day, Weekday, Hour, Minutes, Seconds, Milliseconds
-	time_tuple = (2017, 1, 1, 0, 12, 00, 10, 0)
+    response = http_get("http://192.168.1.118/", 8080)
+    response_string = str(response).split("START")[-1].split("END")[0]
+    time_list = response_string.split(",")
+    t_int = [int(s) for s in time_list]
+
+	# Year, Month, Day, Hour, Min, Sec, Weekday, Yearday, DST from t_int
+	# Year, Month, Day, Weekday, Hour, Min, Seconds, Milliseconds to Tuple.
+	time_tuple = (t_int[0], t_int[1], t_int[2], t_int[6], t_int[3], t_int[4], t_int[5], 0)
 	rtc = machine.RTC()
 	rtc.datetime(time_tuple)
 
