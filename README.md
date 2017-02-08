@@ -31,6 +31,9 @@ You will need `ampy` (`sudo pip install ampy`) on your computer to upload files 
 
   In other words, the cache system works exclusively for the problem of the broker temporarily going offline.
 
+10. There used to be a timeout which raises an annoying exception and is hard to fix without a reset. Running `connect()` and `disconnect()` before and after each message prevents this timeout. The device runs easily overnight, up to, and above shock index numbers of 500.
+  * The only concern now is an overflow, which is unlikely (assuming signed 32-bit integer).
+
 ### Remaing possibilities
 1. The website inside the `/docs` folder needs to be made. Active display of data?
 
