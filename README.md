@@ -34,6 +34,10 @@ You will need `ampy` (`sudo pip install ampy`) on your computer to upload files 
 10. There used to be a timeout which raises an annoying exception and is hard to fix without a reset. Running `connect()` and `disconnect()` before and after each message prevents this timeout. The device runs easily overnight, up to, and above shock index numbers of 500.
   * The only concern now is an overflow, which is unlikely (assuming signed 32-bit integer).
 
+11. The "real units" of the seismograph are measured in Volts per metres per second. In other words, the device measures velocity. However, the specific velocity is not needed in our detections for shocks, which is why we have not gone into interpretting the voltage data specifically. Additionally, the transfer function between the voltage and m/s varies with frequency (the datasheet has a Bode plot). 
+
+12. Website building has begun. 
+
 ### Remaing possibilities
 1. The website inside the `/docs` folder needs to be made. Active display of data?
 
@@ -41,20 +45,6 @@ You will need `ampy` (`sudo pip install ampy`) on your computer to upload files 
 
 3. Server-side calculations? Aka additional data processing that is too intensive for the poor little microcontroller.
 
-4. Network access? The internal network lacks internet access atm. This makes it difficult for time. Also, what about transmission to another server for recording?
+4. Additional features, such as buying buzzer. Battery? Light sensor for intrusion detection. Noise floor threshold?
 
-5. Additional features, such as buying buzzer. Battery? Light sensor for intrusion detection. Noise floor threshold?
-
-6. Units and real values of the sensor data.
-
-7. Analogue filtering.
-
-### Talk to Dr. Stott about:
-
-1. Server functions. Do we implement stuff for his Pi? For our own server? Can we set up a local listener and direct the data to local database for display on the website?
-
-2. Triggering, statistics, processing. What constitutes sufficient of each?
-
-3. SSL stuff.
-
-4. What is cloud functionality?
+5. Analogue filtering.
