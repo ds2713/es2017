@@ -34,17 +34,23 @@ You will need `ampy` (`sudo pip install ampy`) on your computer to upload files 
 10. There used to be a timeout which raises an annoying exception and is hard to fix without a reset. Running `connect()` and `disconnect()` before and after each message prevents this timeout. The device runs easily overnight, up to, and above shock index numbers of 500.
   * The only concern now is an overflow, which is unlikely (assuming signed 32-bit integer).
 
-11. The "real units" of the seismograph are measured in Volts per metres per second. In other words, the device measures velocity. However, the specific velocity is not needed in our detections for shocks, which is why we have not gone into interpretting the voltage data specifically. Additionally, the transfer function between the voltage and m/s varies with frequency (the datasheet has a Bode plot). 
+11. The "real units" of the seismograph are measured in Volts per metres per second. In other words, the device measures velocity. However, the specific velocity is not needed in our detections for shocks, which is why we have not gone into interpretting the voltage data specifically. Additionally, the transfer function between the voltage and m/s varies with frequency (the datasheet has a Bode plot).
 
-12. Website building has begun. 
+12. Website building has begun.
 
-### Remaing possibilities
+13. Buzzer! When shocked, it buzzers. Using PWM output (hardware, apparently). Light sensor! Sends intrusion detection messages when exposed.
+
+14. Threshold is now not a value, but comparing values from two pins. Pin(3) is the seismograph. Pin(0) is a potentiometer.
+
+15. Timing is defaulted to midnight, Jan 1 2017, if it does not receive a server value. 
+
+### Remaing work
 1. The website inside the `/docs` folder needs to be made. Active display of data?
 
 2. SSL connection for the messages to be encrypted.
 
 3. Server-side calculations? Aka additional data processing that is too intensive for the poor little microcontroller.
 
-4. Additional features, such as buying buzzer. Battery? Light sensor for intrusion detection. Noise floor threshold?
+4. Battery.
 
 5. Analogue filtering.
