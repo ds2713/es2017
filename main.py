@@ -138,15 +138,17 @@ def main():
 
 			# Acquire reading statistics for output register
 			maximum_value = max(output_reg)
+			minimum_value = min(output_reg)
 			mean_value = float(sum(output_reg))/float(len(output_reg))
 
 			# Construct JSON
 			message = {
-                'device_id' : UNIQUE_ID,
+				'device_id' : UNIQUE_ID,
 				'index' : index,
 				'time' : shock_time,
 				'max_value' : maximum_value,
-				'mean_value' : mean_value
+				'mean_value' : mean_value,
+				'min_value' : minimum_value,
 			}
 
 			output_str = json.dumps(message)
