@@ -1,4 +1,4 @@
-from machine import Pin, I2C
+from machine import Pin, I2C, PWM
 import ads1x15
 import time
 import math
@@ -25,6 +25,16 @@ def http_get(url, port):
     s.close()
     return fullresponse
 
+# Function to send message via MQTT
+def send_mqtt(the_message):
+    # Using global to remove need to initialise new object each time
+    global client
+	CLIENT_TOPIC = '/esys/mdma'
+    client.connect()
+    client.publish(CLIENT_TOPIC, bytes(the_message, 'utf-8'))
+	# Disconnect each time to prevent timeout which will cause an exception.
+    client.disconnect()
+
 # Main function
 def main():
 	# Connect to network, then wait
@@ -45,14 +55,11 @@ def main():
 
 	# Initial MQTTClient
 	CLIENT_ID = 'mdma'
-	CLIENT_TOPIC = '/esys/mdma'
+    global client
 	client = MQTTClient(CLIENT_ID, '192.168.0.10')
-	client.connect()
 	# Send MQTT Message at boot to confirm success
-	client.publish(CLIENT_TOPIC, bytes('MDMA MQTT Live', 'utf-8'))
+    send_mqtt('MDMA MQTT Live!')
 	print("MQTT client successful.")
-	# Disconnect each time to prevent timeout which will cause an exception.
-	client.disconnect()
 
 	# Setup i2c class for interface with ADC
 	i2c = I2C(scl=Pin(5), sda=Pin(4), freq = 100000)
@@ -66,13 +73,16 @@ def main():
 	# LED for processing time, buzzer for noting shocks.
 	led = Pin(2, Pin.OUT)
 	led.high()
-	buzzer = Pin(0, Pin.OUT)
-	buzzer.low()
+	buzzer = PWM(Pin(2), freq=500, duty=0)
 
 	# Time setup. Future network setup.
     print("Configuring time from network.")
-    response = http_get("http://192.168.1.118/", 8080)
-    response_string = str(response).split("START")[-1].split("END")[0]
+    try:
+        response = http_get("http://192.168.1.118/", 8080)
+        response_string = str(response).split("START")[-1].split("END")[0]
+    except:
+        response_string = '2017,1,1,0,0,0,7,1,0'
+
     time_list = response_string.split(",")
     t_int = [int(s) for s in time_list]
 
@@ -88,7 +98,6 @@ def main():
 	history = 25
 	future = samples - history - 1
 	threshold = 50
-
 	# Initialise registers and pointer
 	output_reg = [0]*samples
 	historic_reg = [0]*history
@@ -96,6 +105,8 @@ def main():
 	index = 0
 	# Message cache for unsent ones
 	message_cache = []
+    # For message ID
+    UNIQUE_ID = machine.unique_id()
 
 	print("Begin reading values.")
 	# Infinite reading loop
@@ -108,7 +119,7 @@ def main():
 			shock_time = time.localtime()
 
 			# Turn on cues, visual, audio.
-			buzzer.high()
+			buzzer.duty(512)
 			led.low()
 
 			# Add current reading to output register
@@ -119,7 +130,7 @@ def main():
 				output_reg[future_pointer+history+1] = ads.read(0)
 
 			# Turn buzzer off
-			buzzer.low()
+			buzzer.duty(0)
 
 			# Copy history into output register
 			output_reg[0:history - hist_pointer] = historic_reg[hist_pointer:history]
@@ -131,6 +142,7 @@ def main():
 
 			# Construct JSON
 			message = {
+                'device_id' : UNIQUE_ID
 				'index' : index,
 				'time' : shock_time,
 				'max_value' : maximum_value,
@@ -144,15 +156,11 @@ def main():
 				# If cache is not empty, send oldest to newest messages
 				# Then delete message, repeat until empty
 				while len(message_cache) > 0:
-					client.connect()
-					client.publish(CLIENT_TOPIC, bytes(message_cache[0], 'utf-8'))
-					client.disconnect()
+					send_mqtt(message_cache[0])
 					del message_cache[0]
 
 				# Send current message
-				client.connect()
-				client.publish(CLIENT_TOPIC, bytes(output_str, 'utf-8'))
-				client.disconnect()
+				send_mqtt(output_str)
 
 			# If cannot send, save to cache.
 			except:
