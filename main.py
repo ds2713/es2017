@@ -10,20 +10,20 @@ from umqtt.simple import MQTTClient
 
 # Function to obtain response via HTML.
 def http_get(url, port):
-    _, _, host, path = url.split('/', 3)
-    addr = socket.getaddrinfo(host, port)[0][-1]
-    s = socket.socket()
-    s.connect(addr)
-    s.send(bytes("GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n" % (path, host), "utf8"))
-    fullresponse = []
-    while True:
-        data = s.recv(100)
-        if data:
-            fullresponse.append(str(data, "utf8"))
-        else:
-            break
-    s.close()
-    return fullresponse
+	_, _, host, path = url.split('/', 3)
+	addr = socket.getaddrinfo(host, port)[0][-1]
+	s = socket.socket()
+	s.connect(addr)
+	s.send(bytes("GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n" % (path, host), "utf8"))
+	fullresponse = []
+	while True:
+		data = s.recv(100)
+		if data:
+			fullresponse.append(str(data, "utf8"))
+		else:
+			break
+	s.close()
+	return fullresponse
 
 # Function to send message via MQTT
 def send_mqtt(the_message):
@@ -91,7 +91,7 @@ def main():
 	time_tuple = (t_int[0], t_int[1], t_int[2], t_int[6], t_int[3], t_int[4], t_int[5], 0)
 	rtc = machine.RTC()
 	rtc.datetime(time_tuple)
-    print("Time has been set.")
+	print("Time has been set.")
 
 	# Initialise parameters for measurements
 	samples = 100
