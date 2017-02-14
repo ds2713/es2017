@@ -27,13 +27,13 @@ def http_get(url, port):
 
 # Function to send message via MQTT
 def send_mqtt(the_message):
-    # Using global to remove need to initialise new object each time
-    global client
+	# Using global to remove need to initialise new object each time
+	global client
 	CLIENT_TOPIC = '/esys/mdma'
-    client.connect()
-    client.publish(CLIENT_TOPIC, bytes(the_message, 'utf-8'))
+	client.connect()
+	client.publish(CLIENT_TOPIC, bytes(the_message, 'utf-8'))
 	# Disconnect each time to prevent timeout which will cause an exception.
-    client.disconnect()
+	client.disconnect()
 
 # Main function
 def main():
@@ -55,10 +55,10 @@ def main():
 
 	# Initial MQTTClient
 	CLIENT_ID = 'mdma'
-    global client
+	global client
 	client = MQTTClient(CLIENT_ID, '192.168.0.10')
 	# Send MQTT Message at boot to confirm success
-    send_mqtt('MDMA MQTT Live!')
+	send_mqtt('MDMA MQTT Live!')
 	print("MQTT client successful.")
 
 	# Setup i2c class for interface with ADC
@@ -73,18 +73,18 @@ def main():
 	# LED for processing time, buzzer for noting shocks.
 	led = Pin(2, Pin.OUT)
 	led.high()
-	buzzer = PWM(Pin(2), freq=500, duty=0)
+	buzzer = PWM(Pin(0), freq=500, duty=0)
 
 	# Time setup. Future network setup.
-    print("Configuring time from network.")
-    try:
-        response = http_get("http://192.168.1.118/", 8080)
-        response_string = str(response).split("START")[-1].split("END")[0]
-    except:
-        response_string = '2017,1,1,0,0,0,7,1,0'
+	print("Configuring time from network.")
+	try:
+		response = http_get("http://192.168.1.118/", 8080)
+		response_string = str(response).split("START")[-1].split("END")[0]
+	except:
+		response_string = '2017,1,1,0,0,0,7,1,0'
 
-    time_list = response_string.split(",")
-    t_int = [int(s) for s in time_list]
+	time_list = response_string.split(",")
+	t_int = [int(s) for s in time_list]
 
 	# Year, Month, Day, Hour, Min, Sec, Weekday, Yearday, DST from t_int
 	# Year, Month, Day, Weekday, Hour, Min, Seconds, Milliseconds to Tuple.
@@ -97,7 +97,7 @@ def main():
 	samples = 100
 	history = 25
 	future = samples - history - 1
-	threshold = 50
+	threshold = 2000
 	# Initialise registers and pointer
 	output_reg = [0]*samples
 	historic_reg = [0]*history
@@ -105,8 +105,8 @@ def main():
 	index = 0
 	# Message cache for unsent ones
 	message_cache = []
-    # For message ID
-    UNIQUE_ID = machine.unique_id()
+	# For machine ID
+	UNIQUE_ID = 1337
 
 	print("Begin reading values.")
 	# Infinite reading loop
@@ -142,7 +142,7 @@ def main():
 
 			# Construct JSON
 			message = {
-                'device_id' : UNIQUE_ID
+                'device_id' : UNIQUE_ID,
 				'index' : index,
 				'time' : shock_time,
 				'max_value' : maximum_value,
