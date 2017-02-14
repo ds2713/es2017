@@ -8,6 +8,8 @@ device_id        = 'db-server'      # * set your device id (will be the MQTT cli
 # device_secret    = '<DEVICE_SECRET>'  # * set your device secret (will be the MQTT client password)
 random_client_id = 'db-server'      # * set a random client_id (max 23 char)
 
+# connect to the ES database
+# es object has to be seen in all methods
 es = elasticsearch.Elasticsearch()
 
 # connection event
@@ -47,11 +49,7 @@ def on_message(client, obj, msg):
     # post to elasticsearch index
     es.index(index='lsd', doc_type='test', body=data)
 
-
 def main():
-
-	#connect to ES database
-
 
 	# ------------- #
 	# MQTT settings #
