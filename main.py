@@ -29,11 +29,26 @@ def http_get(url, port):
 def send_mqtt(the_message):
 	# Using global to remove need to initialise new object each time
 	global client
+	global message_cache
+	message_json = json.dumps(the_message)
 	CLIENT_TOPIC = '/esys/mdma'
-	client.connect()
-	client.publish(CLIENT_TOPIC, bytes(the_message, 'utf-8'))
-	# Disconnect each time to prevent timeout which will cause an exception.
-	client.disconnect()
+	# Send message to broker, catch sending errors
+	try:
+		client.connect()
+		# If cache is not empty, send oldest to newest messages
+		# Then delete message, repeat until empty
+		while len(message_cache) > 0:
+			client.publish(CLIENT_TOPIC, bytes(message_cache[0], 'utf-8'))
+			del message_cache[0]
+
+		# Send current message
+		client.publish(CLIENT_TOPIC, bytes(message_json, 'utf-8'))
+		# Disconnect each time to prevent timeout which will cause an exception.
+		client.disconnect()
+
+	# If cannot send, save to cache.
+	except:
+		message_cache.append(message_json)
 
 # Main function
 def main():
@@ -57,6 +72,9 @@ def main():
 	CLIENT_ID = 'mdma'
 	global client
 	client = MQTTClient(CLIENT_ID, '192.168.0.10')
+	# Message cache for unsent ones
+	global message_cache
+	message_cache = []
 	# Send MQTT Message at boot to confirm success
 	send_mqtt('MDMA MQTT Live!')
 	print("MQTT client successful.")
@@ -103,18 +121,30 @@ def main():
 	historic_reg = [0]*history
 	hist_pointer = 0
 	index = 0
-	# Message cache for unsent ones
-	message_cache = []
 	# For machine ID
 	UNIQUE_ID = 1337
 
 	print("Begin reading values.")
 	# Infinite reading loop
 	while True:
+		# Take readings
+		reading = ads.read(3)
+		light = ads.read(2)
 
-		reading = ads.read(0)
+		# Intrusion detection
+		if light > 1000:
+			# Construct JSON
+			intrusion_message = {
+				'device_id' : UNIQUE_ID,
+				'time' : time.localtime(),
+				'intrusion' : 1,
+				'intensity' : light,
+			}
 
-		if math.fabs(reading) > threshold:
+			send_mqtt(intrusion_message)
+
+		# Shock detection
+		if math.fabs(reading) > ads.read(0):
 			# Capture time
 			shock_time = time.localtime()
 
@@ -142,7 +172,7 @@ def main():
 			mean_value = float(sum(output_reg))/float(len(output_reg))
 
 			# Construct JSON
-			message = {
+			shock_message = {
 				'device_id' : UNIQUE_ID,
 				'index' : index,
 				'time' : shock_time,
@@ -151,22 +181,8 @@ def main():
 				'min_value' : minimum_value,
 			}
 
-			output_str = json.dumps(message)
-
-			# Send message to broker, catch sending errors
-			try:
-				# If cache is not empty, send oldest to newest messages
-				# Then delete message, repeat until empty
-				while len(message_cache) > 0:
-					send_mqtt(message_cache[0])
-					del message_cache[0]
-
-				# Send current message
-				send_mqtt(output_str)
-
-			# If cannot send, save to cache.
-			except:
-				message_cache.append(output_str)
+			# Send message
+			send_mqtt(shock_message)
 
 			# Reinitialise historic_reg and pointer
 			# Because it contains outdated info.
