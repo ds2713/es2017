@@ -193,3 +193,4 @@ $(function() {
   // expose for use by the widgets and Silex editor
   window.resizeBody = resizeBody;
 });
+
