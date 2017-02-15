@@ -179,6 +179,7 @@ def main():
 				'max_value' : maximum_value,
 				'mean_value' : mean_value,
 				'min_value' : minimum_value,
+				'intrusion' : 0,
 			}
 
 			# Send message
