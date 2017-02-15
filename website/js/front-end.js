@@ -194,3 +194,17 @@ $(function() {
   window.resizeBody = resizeBody;
 });
 
+$( document ).ready(function() {
+
+  $("#refresh_graphs").click(function(){
+    var src = "http://localhost:5601/app/kibana#/dashboard/shocks-and-intrusions?embed=true&_g=(refreshInterval%3A(display%3AOff%2Cpause%3A!f%2Cvalue%3A0)%2Ctime%3A(from%3A'2017-01-01T00:00:00.000Z'%2Cmode%3Aabsolute%2Cto%3A'"
+  
+    var today = new Date();
+    today = today.toISOString();
+    src = src + today + "'))";
+
+    $("#kibana_graph").attr('src',src)
+  });
+});
+
+
