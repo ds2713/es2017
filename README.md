@@ -42,7 +42,9 @@ You will need `ampy` (`sudo pip install ampy`) on your computer to upload files 
 
 14. Threshold is now not a value, but comparing values from two pins. Pin(3) is the seismograph. Pin(0) is a potentiometer.
 
-15. Timing is defaulted to midnight, Jan 1 2017, if it does not receive a server value. 
+15. Timing is defaulted to midnight, Jan 1 2017, if it does not receive a server value.
+
+16. Battery connection for demo successful. 
 
 ### Remaing work
 1. The website inside the `/docs` folder needs to be made. Active display of data?
@@ -51,6 +53,4 @@ You will need `ampy` (`sudo pip install ampy`) on your computer to upload files 
 
 3. Server-side calculations? Aka additional data processing that is too intensive for the poor little microcontroller.
 
-4. Battery.
-
-5. Analogue filtering.
+4. Analogue filtering.
