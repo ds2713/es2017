@@ -27,7 +27,7 @@ def on_message(client, obj, msg):
     receivedData = json.loads(json_data)
 
     # print for debug
-    print(receivedData)
+    #print(receivedData)
 
     # check if message read is sensor event, else don't process
     if type(receivedData) is dict:
@@ -39,14 +39,15 @@ def on_message(client, obj, msg):
         # extract and reformat (into ES format) time of the sensor reading
         sensor_time = receivedData["time"]
         es_time = str(sensor_time[0]) + "-" + str(sensor_time[1]).zfill(2) + "-" + str(sensor_time[2]).zfill(2) + "T" + str(sensor_time[3]) + ":" + str(sensor_time[4]) + ":" + str(sensor_time[5])
-        print (es_time)
+        #print (es_time)
 
         # check type of event - shock or intrusion
         if (receivedData["intrusion"] == 0):
             # SHOCK EVENT
+            print("Shock")
 
             # log event into console
-            print ("Maximum value: ", receivedData["max_value"])
+            # print ("Maximum value: ", receivedData["max_value"])
             # value = json.loads(json_data)['properties'][0]['value']
             # print(json_data["index"])
             # confirm changes to Leylan
@@ -60,19 +61,20 @@ def on_message(client, obj, msg):
             data['time'] = es_time
 
             #print for debug
-            print (data)
+            #print (data)
 
             # post to elasticsearch index
             es.index(index=es_index, doc_type='shock', body=data)
         else:
             #INTRUSION EVENT
+            print("Intrusion")
             # construct data
             data = {}
             data['time'] = es_time
             data['intensity'] = receivedData["intensity"]
 
             # print for debug
-            print(data)
+            #print(data)
 
             # post to elasticsearch index
             es.index(index=es_index, doc_type='intrusion', body=data)
