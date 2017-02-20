@@ -3,7 +3,7 @@ import json, time
 import elasticsearch
 import datetime
 
-# connect to the ES database
+# connect to the default ES database (on localhost)
 # es object has to be seen in all methods hence here
 es = elasticsearch.Elasticsearch()
 
