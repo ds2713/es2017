@@ -49,13 +49,6 @@ Elasticsearch and Kibana running on localhost, Elasticsearch mapping (definition
 
 15. Timing is defaulted to midnight, Jan 1 2017, if it does not receive a server value.
 
-16. Battery connection for demo successful. 
+16. Battery connection for demo successful.
 
-### Remaing work
-1. The website inside the `/docs` folder needs to be made. Active display of data?
-
-2. SSL connection for the messages to be encrypted.
-
-3. Server-side calculations? Aka additional data processing that is too intensive for the poor little microcontroller.
-
-4. Analogue filtering.
+17. Website chat, including server side processing.
