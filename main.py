@@ -93,7 +93,7 @@ def main():
 	led.high()
 	buzzer = PWM(Pin(0), freq=500, duty=0)
 
-	# Time setup. Future network setup.
+	# Time setup from network. If not, set to midnight, Jan 1, 2017.
 	print("Configuring time from network.")
 	try:
 		response = http_get("http://192.168.1.118/", 8080)
@@ -133,7 +133,7 @@ def main():
 
 		# Intrusion detection
 		if light > 1000:
-			# Construct JSON
+			# Construct JSON, send message.
 			intrusion_message = {
 				'device_id' : UNIQUE_ID,
 				'time' : time.localtime(),
@@ -171,7 +171,7 @@ def main():
 			minimum_value = min(output_reg)
 			mean_value = float(sum(output_reg))/float(len(output_reg))
 
-			# Construct JSON
+			# Construct JSON, send message.
 			shock_message = {
 				'device_id' : UNIQUE_ID,
 				'index' : index,
@@ -182,7 +182,6 @@ def main():
 				'intrusion' : 0,
 			}
 
-			# Send message
 			send_mqtt(shock_message)
 
 			# Reinitialise historic_reg and pointer
