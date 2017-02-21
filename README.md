@@ -7,7 +7,6 @@ We're using the EPS8266 microcontroller with Micropython. This is connected to t
 
 You will need `ampy` (`sudo pip install ampy`) on your computer to upload files to the microcontroller, and `screen` (`PuTTY` for you heathens) for serial communications.
 
-<<<<<<< HEAD
 ## Descriptions of Files
 
 ### `adc_driver/`
@@ -19,53 +18,47 @@ A folder containing some pictures of the longevity of the LSD. They are screenca
 ### `website/`
 The website for LSD can be found by opening the `index.html` file in the `website` folder in our repository. It was created using an online editor [Silex editor] (https://www.silex.me/) and some subsequent edits were done manually. It describes the use-case of the product, gives some background information on the team, and there is a demo sub-page. If the website is run on the same machine as the Elasticsearch database, the demo shows real data from the database. In the code submitted, this is replaced by a static picture to illustrate how the consumer-side of the data processing looks like.
 
-
 ### `mqtt-listener-db.py`
 Script to be run on our server. Subscribes to the MQTT topic to which the LSD posts, reads messages, reformats them to a format readable by Elasticsearch, and inserts data into the Elasticsearch index. Connects to the default Elasticsearch index, running on the localhost (in reality, both database and this script would always be running on the same machine). It distinguishes between the types of messages posted by LSD and only indexes the relevant ones.
 #### Dependencies
 [Elasticsearch and Kibana] (https://www.elastic.co/downloads) running on localhost, Elasticsearch mapping (definition of data type which will be inserted) exists in the index (database).
 
 ### `time-server.py`
-
+This is a server that needs to be run on the same network as the LSD. Its IP address will need to be manually configured inside the LSD. The script sets up a server that will return the current time in text when an HTTP request is sent. This time can be parsed by whatever devices need the time.
 
 ### `main.py`
-1. ADC configured to read data from sensor. ES8266 configured to read data from ADC.
+This is the main file of our LSD. The operation and its features are described below.
 
-2. ESP8266 will query a server for the setup time data. This assumes that a suitable server is running the time_server.py script which is included.
+#### `http_get(url, port)`
+This function takes in a URL and a port number before returning the resulting HTTP response. This is used in the `main()` function to obtain the time from the server runing `time-server.py`.
 
-2. Readings stored in historic (circular) buffer.
+#### `send_mqtt(the_message)`
+This function takes in a message in text, converts it to JSON. It then takes the globally declared `client` object, attempts to connect. It then attempts to empty the globally declared `message_cache` which stores unsent messages. After the cache is emptied, it will send the current message. If this is not possible, the current message is put into the cache, for the subsequent attempts.
 
-3. When a shock exceeds a threshold, the output buffer is filled with the subsequent readings, and with the historic readings.
+If the connection is succesful and all messages are sent out, the client is disconnected. This was discovered to be necessary to prevent a timeout error from occuring in certain cases.
 
-4. A buzzer sounds, and an LED lights up. Buzzer stays on until subsequent readings are taken. The LED remains on until after the sending of the message.
+#### `main()`
+##### Setup
+LSD first attempts to connects to a network. Then creates and configures the global MQTT object used for all messages. The ADC is then configured, followed by two output pinns: LED and a PWM. The PWM is set at a 0% duty cycle because changing duty cycle to and from 0% is faster than initialising and deinitialising the PWM output. Then, the time is configured by querying the server. If this fails, it defaults to midnight on Jan 1, 2017.
 
-5. The time of the shock, the maximum value, the  minimum value, and the index number of the shock are recorded.
+##### Main Operation
+Three values of three pins are read. The Pin(2) corresponds to the LDR. It is configured to show higher readings with more light. If this reading exceeds 1000, this means the box is opened. If this is the case, LSD sends a message notifying the server of this intrusion. The message also contains the light intensity, the time, and the device's unique ID.
 
-6. This is put into `JSON` format.
+Pin(0) is the potentiometer used to calibrate the sensitivity of the shock detection. Pin(3) reads from the seismograph. These are compared. If there is no shock detected, the reading from Pin(3) is stored in a circular "historic" buffer. Then the loop repeats indefinitely, taking readings.
 
-7. Successfully sends this to the MQTT broker.
+If there is a shock detected, a number events happen.
+1. Buzzer goes off by raising the duty cycle to 50%. LED goes on!
+2. Time is recorded.
+3. The subsequent readings are taken, and stored in the output buffer. The buzzer goes off.
+4. The historic buffer is added to the output buffer.
+5. Statistics are taken, and a message is created and sent. The message contains the device ID, the index number of the shock, the time, the maximum, the minimum, and the mean values.
+6. The buffers are cleared, the LED turned off, and the index incremented.
 
-8. Historic buffer is cleared, entire process repeats itself.
+#### Features
+1. The "real units" of the seismograph are measured in Volts per metres per second. In other words, the device measures velocity. However, the specific velocity is not needed in our detections for shocks, which is why we have not gone into interpretting the voltage data specifically. Additionally, the transfer function between the voltage and m/s varies with frequency (the datasheet has a Bode plot).
 
-9. A cache system. MQTT message is sent. If this does not work, the message is stored. Next time a message needs to be sent, the cache will be emptied first (send first item, delete, repeat until empty). Then the current message sent. Two caveats:
-  * Assumes successful connection will happen before memory runs out. Otherwise crashes.
-  * There is no attempt to check the network connection or reestablish it if it decides to fail.
+2. A cache system for the messages when an MQTT message is sent. If this does not work, the message is stored. Next time a message needs to be sent, the cache will be emptied first (send first item, delete, repeat until empty). Then, the current message is sent.
 
-  In other words, the cache system works exclusively for the problem of the broker temporarily going offline.
+10. The device runs easily overnight, up to, and above shock index numbers of 500. The only concern now is an overflow, which is unlikely (assuming signed 32-bit integer). Also, over a thousand damaging shocks to a device is (hopefully) unlikely.
 
-10. There used to be a timeout which raises an annoying exception and is hard to fix without a reset. Running `connect()` and `disconnect()` before and after each message prevents this timeout. The device runs easily overnight, up to, and above shock index numbers of 500.
-  * The only concern now is an overflow, which is unlikely (assuming signed 32-bit integer).
-
-11. The "real units" of the seismograph are measured in Volts per metres per second. In other words, the device measures velocity. However, the specific velocity is not needed in our detections for shocks, which is why we have not gone into interpretting the voltage data specifically. Additionally, the transfer function between the voltage and m/s varies with frequency (the datasheet has a Bode plot).
-
-12. Website building has begun.
-
-13. Buzzer! When shocked, it buzzers. Using PWM output (hardware, apparently). Light sensor! Sends intrusion detection messages when exposed.
-
-14. Threshold is now not a value, but comparing values from two pins. Pin(3) is the seismograph. Pin(0) is a potentiometer.
-
-15. Timing is defaulted to midnight, Jan 1 2017, if it does not receive a server value.
-
-16. Battery connection for demo successful.
-
-17. Website chat, including server side processing.
+4. Functions without any issues from a power bank!
