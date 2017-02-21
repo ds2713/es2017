@@ -19,8 +19,7 @@ class myHandler(http.server.BaseHTTPRequestHandler):
 		return
 
 try:
-	# Create a web server and define the handler to manage the
-	# Incoming request
+	# Create a web server and define the handler to manage the request
 	server = http.server.HTTPServer(('', PORT_NUMBER), myHandler)
 	print("Webserver started on port " + str(PORT_NUMBER) + ". ")
 
