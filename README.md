@@ -1,17 +1,32 @@
 # EE3-24 Embedded Systems Spring Term 2017
-_Embedded Systems Coursework Folder_
-## 1. IOT Sensor Project
+_Embedded Systems Coursework Repository_
+# IOT Sensor Project - LSD: Lightweight Shock Detection
+## Group - MDMA: Martin David Meng Association
 
 We're using the EPS8266 microcontroller with Micropython. This is connected to the ADS1115 ADC reading values from a SM-24 geophone (seismic data).
 
 You will need `ampy` (`sudo pip install ampy`) on your computer to upload files to the microcontroller, and `screen` (`PuTTY` for you heathens) for serial communications.
 
-## mqtt-listener-db.py
-Script to be run on our server. Subscribes to the MQTT topic to which the LSD posts, reads messages, reformats them to format readable by Elasticsearch and inserts data into the Elasticsearch index. Connects to the default Elasticsearch index, running on the localhost (in reality, both database and this script would always be running on the same machine). It distinguishes between the types of messages posted by LSD and only indexes the relevant ones.
-### Prerequisites
+## Descriptions of Files
+
+### `adc_driver/`
+This folder contains the Micropython driver for the Analogue-to-Digital Converter (ADC), which we used to interface with the ADS1115.
+
+### `Pictures and Data/`
+A folder containing some pictures of the longevity of the LSD. They are screencaps of the device's output after several days of continuous successful operation.
+
+### `website/`
+The website for LSD can be found by opening the `index.html` file in the `website` folder in our repository.
+
+### `mqtt-listener-db.py`
+Script to be run on our server. Subscribes to the MQTT topic to which the LSD posts, reads messages, reformats them to a format readable by Elasticsearch, and inserts data into the Elasticsearch index. Connects to the default Elasticsearch index, running on the localhost (in reality, both database and this script would always be running on the same machine). It distinguishes between the types of messages posted by LSD and only indexes the relevant ones.
+#### Prerequisites
 Elasticsearch and Kibana running on localhost, Elasticsearch mapping (definition of data type which will be inserted) exists in the index (database).
 
-### Functionality and Processing Information
+### `time-server.py`
+
+
+### `main.py`
 1. ADC configured to read data from sensor. ES8266 configured to read data from ADC.
 
 2. ESP8266 will query a server for the setup time data. This assumes that a suitable server is running the time_server.py script which is included.
